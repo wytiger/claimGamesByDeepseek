@@ -1,15 +1,16 @@
-# .github/workflows/claim_free_games.yml
 name: 自动领取免费游戏
 
 on:
   schedule:
-    # 每周一早上9点（北京时间）
-    - cron: '0 1 * * 1'  # UTC时间1点 = 北京时间9点
-  workflow_dispatch:  # 支持手动触发
+    - cron: '0 1 * * 1'  # 每周一09:00(北京时间)
+  workflow_dispatch:
+  push:
+    branches: [ main ]
 
 jobs:
   claim-games:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     
     steps:
     - name: 检出代码
@@ -20,11 +21,13 @@ jobs:
       with:
         python-version: '3.10'
     
-    - name: 安装依赖
+    - name: 安装依赖和浏览器
       run: |
         pip install selenium webdriver-manager
         sudo apt-get update
         sudo apt-get install -y chromium-browser chromium-chromedriver
+        # 创建软链接解决问题
+        sudo ln -sf /usr/bin/chromium-browser /usr/bin/google-chrome
     
     - name: 运行领取脚本
       env:
@@ -32,4 +35,4 @@ jobs:
         STEAM_PASSWORD: ${{ secrets.STEAM_PASSWORD }}
         EPIC_USERNAME: ${{ secrets.EPIC_USERNAME }}
         EPIC_PASSWORD: ${{ secrets.EPIC_PASSWORD }}
-      run: python claim_free_games_github.py
+      run: python claim_free_games.py
