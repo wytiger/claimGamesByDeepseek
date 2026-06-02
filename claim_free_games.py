@@ -6,13 +6,28 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 
 def setup_driver():
-    """配置无头浏览器"""
+    """配置无头浏览器（适配GitHub Actions环境）"""
+    from selenium import webdriver
+    from selenium.webdriver.chrome.options import Options
+    from selenium.webdriver.chrome.service import Service
+    
     chrome_options = Options()
     chrome_options.add_argument("--headless=new")
     chrome_options.add_argument("--no-sandbox")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--disable-gpu")
-    driver = webdriver.Chrome(options=chrome_options)
+    
+    # 关键：明确指定Chromium二进制文件的位置
+    chrome_options.binary_location = "/usr/bin/chromium-browser"
+    
+    # 方法1：使用系统安装的chromedriver（推荐）
+    service = Service("/usr/lib/chromium-browser/chromedriver")
+    
+    # 方法2（备选）：让webdriver-manager自动处理
+    # from webdriver_manager.chrome import ChromeDriverManager
+    # service = Service(ChromeDriverManager().install())
+    
+    driver = webdriver.Chrome(service=service, options=chrome_options)
     return driver
 
 def claim_steam(driver, username, password):
