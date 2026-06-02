@@ -1,0 +1,36 @@
+name: 自动领取免费游戏
+
+on:
+  schedule:
+    - cron: '0 1 * * 1'  # 每周一09:00(北京时间)
+  workflow_dispatch:  # 手动触发
+  push:  # 测试用：推送代码时触发
+    branches: [ main ]
+
+jobs:
+  claim-games:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
+    steps:
+    - name: 检出代码
+      uses: actions/checkout@v3
+    
+    - name: 安装Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
+    
+    - name: 安装依赖
+      run: |
+        pip install selenium webdriver-manager
+        sudo apt-get update
+        sudo apt-get install -y chromium-browser chromium-chromedriver
+    
+    - name: 运行领取脚本
+      env:
+        STEAM_USERNAME: ${{ secrets.STEAM_USERNAME }}
+        STEAM_PASSWORD: ${{ secrets.STEAM_PASSWORD }}
+        EPIC_USERNAME: ${{ secrets.EPIC_USERNAME }}
+        EPIC_PASSWORD: ${{ secrets.EPIC_PASSWORD }}
+      run: python claim_free_games.py
